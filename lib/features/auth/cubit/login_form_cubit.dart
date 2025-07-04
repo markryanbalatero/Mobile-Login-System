@@ -1,0 +1,39 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:formz/formz.dart';
+import '../../../core/models/email.dart';
+import '../../../core/models/password.dart';
+
+part 'login_form_state.dart';
+
+class LoginFormCubit extends Cubit<LoginFormState> {
+  LoginFormCubit() : super(const LoginFormState());
+
+  void emailChanged(String value) {
+    final email = Email.dirty(value);
+    emit(
+      state.copyWith(
+        email: email,
+        isValid: Formz.validate([email, state.password]),
+      ),
+    );
+  }
+
+  void passwordChanged(String value) {
+    final password = Password.dirty(value);
+    emit(
+      state.copyWith(
+        password: password,
+        isValid: Formz.validate([state.email, password]),
+      ),
+    );
+  }
+
+  void togglePasswordVisibility() {
+    emit(state.copyWith(isPasswordVisible: !state.isPasswordVisible));
+  }
+
+  void clearForm() {
+    emit(const LoginFormState());
+  }
+}
