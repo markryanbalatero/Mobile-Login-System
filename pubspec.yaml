@@ -44,6 +44,11 @@ dependencies:
   
   # Google Fonts for Inter font family
   google_fonts: ^6.2.1
+  
+  # Firebase
+  firebase_core: ^3.8.0
+  firebase_auth: ^5.1.0
+  cloud_firestore: ^5.5.0
 
 dev_dependencies:
   flutter_test:

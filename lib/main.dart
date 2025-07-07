@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/cubit/auth_cubit.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
   runApp(const MyApp());
 }
 
@@ -62,6 +71,7 @@ class AppView extends StatelessWidget {
           case AuthStatus.initial:
           case AuthStatus.loading:
           case AuthStatus.error:
+          case AuthStatus.signupSuccess:
             return const LoginScreen();
         }
       },

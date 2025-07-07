@@ -10,21 +10,31 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text('VibeHub', style: AppTextStyles.heading28Bold),
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state.status == AuthStatus.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage ?? 'An error occurred'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
         backgroundColor: AppColors.background,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.textDarkest),
-            onPressed: () {
-              context.read<AuthCubit>().signOut();
-            },
-          ),
-        ],
-      ),
+        appBar: AppBar(
+          title: Text('VibeHub', style: AppTextStyles.heading28Bold),
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout, color: AppColors.textDarkest),
+              onPressed: () => _showLogoutDialog(context),
+            ),
+          ],
+        ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -64,15 +74,63 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 48),
             CustomButton(
               text: 'Logout',
-              onPressed: () {
-                context.read<AuthCubit>().signOut();
-              },
+              onPressed: () => _showLogoutDialog(context),
               backgroundColor: AppColors.textLight,
               textColor: AppColors.textWhite,
             ),
           ],
         ),
       ),
+    ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.background,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Logout',
+            style: AppTextStyles.heading28Bold,
+          ),
+          content: Text(
+            'Are you sure you want to logout?',
+            style: AppTextStyles.subheader16Regular,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.subheader16Bold.copyWith(
+                  color: AppColors.textLight,
+                ),
+              ),
+            ),
+            BlocBuilder<AuthCubit, AuthState>(
+              builder: (context, state) {
+                return CustomButton(
+                  text: 'Logout',
+                  isLoading: state.status == AuthStatus.loading,
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    context.read<AuthCubit>().signOut();
+                  },
+                  backgroundColor: Colors.red,
+                  textColor: Colors.white,
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -33,6 +33,18 @@ class LoginFormCubit extends Cubit<LoginFormState> {
     emit(state.copyWith(isPasswordVisible: !state.isPasswordVisible));
   }
 
+  Future<String?> submitForm() async {
+    if (!state.isValid) {
+      return 'Please fill all fields correctly';
+    }
+    
+    // Return the email and password for the AuthCubit to use
+    return null; // Success - no error message
+  }
+
+  String get email => state.email.value;
+  String get password => state.password.value;
+
   void clearForm() {
     emit(const LoginFormState());
   }

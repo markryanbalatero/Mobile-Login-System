@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/models/name.dart';
 import '../../../core/models/email.dart';
 import '../../../core/models/password.dart';
 import '../../../shared/widgets/custom_text_form_field.dart';
@@ -10,11 +11,11 @@ import '../../../shared/animations/slide_page_route.dart';
 import '../../../shared/animations/animated_form_field.dart';
 import '../../../screens/home_screen.dart';
 import '../cubit/auth_cubit.dart';
-import '../cubit/login_form_cubit.dart';
-import 'signup_screen.dart';
+import '../cubit/signup_form_cubit.dart';
+import 'login_screen.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class SignupScreen extends StatelessWidget {
+  const SignupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +23,15 @@ class LoginScreen extends StatelessWidget {
       backgroundColor: AppColors.headerBackground,
       resizeToAvoidBottomInset: true,
       body: MultiBlocProvider(
-        providers: [BlocProvider(create: (_) => LoginFormCubit())],
-        child: const LoginView(),
+        providers: [BlocProvider(create: (_) => SignupFormCubit())],
+        child: const SignupView(),
       ),
     );
   }
 }
 
-class LoginView extends StatelessWidget {
-  const LoginView({super.key});
+class SignupView extends StatelessWidget {
+  const SignupView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,11 +44,32 @@ class LoginView extends StatelessWidget {
               backgroundColor: Colors.red,
             ),
           );
-        } else if (state.status == AuthStatus.authenticated) {
-          // Navigate to home screen
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+        } else if (state.status == AuthStatus.signupSuccess) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Account created successfully!'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
           );
+          
+          // Wait a moment then complete signup flow and navigate to login screen
+          Future.delayed(const Duration(seconds: 2), () {
+            if (context.mounted) {
+              // Complete the signup flow (signs out user and re-enables auth listening)
+              context.read<AuthCubit>().completeSignupFlow();
+              
+              // Navigate to login screen
+              Navigator.of(context).pushAndRemoveUntil(
+                SlidePageRoute(
+                  child: const LoginScreen(),
+                  direction: AxisDirection.left,
+                ),
+                (route) => false,
+              );
+            }
+          });
         }
       },
       child: LayoutBuilder(
@@ -79,7 +101,7 @@ class LoginView extends StatelessWidget {
                       children: [
                         // Header with rocket illustration and logo
                         const HeaderSection(),
-                        // Login form content with rounded corners
+                        // Signup form content with rounded corners
                         Expanded(
                           child: Container(
                             width: double.infinity,
@@ -99,7 +121,7 @@ class LoginView extends StatelessWidget {
                             ),
                             child: const Padding(
                               padding: EdgeInsets.fromLTRB(22, 24, 22, 24),
-                              child: LoginFormSection(),
+                              child: SignupFormSection(),
                             ),
                           ),
                         ),
@@ -122,7 +144,7 @@ class HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    final totalHeight = 280 + statusBarHeight; // Reduced from 310 to 280
+    final totalHeight = 260 + statusBarHeight; // Slightly smaller for signup
 
     return SizedBox(
       height: totalHeight,
@@ -172,8 +194,8 @@ class HeaderSection extends StatelessWidget {
   }
 }
 
-class LoginFormSection extends StatelessWidget {
-  const LoginFormSection({super.key});
+class SignupFormSection extends StatelessWidget {
+  const SignupFormSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -186,13 +208,13 @@ class LoginFormSection extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'Welcome back!',
+                'Join VibeHub!',
                 style: AppTextStyles.heading28Bold,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
-                'Login to continue with VibeHub',
+                'Create your account to get started',
                 style: AppTextStyles.subheader16Regular,
                 textAlign: TextAlign.center,
               ),
@@ -202,51 +224,38 @@ class LoginFormSection extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Form Fields
-        const LoginForm(),
+        const SignupForm(),
 
         const SizedBox(height: 20),
 
-        // Login Button
+        // Signup Button
         AnimatedFormField(
-          delay: const Duration(milliseconds: 800),
-          child: const LoginButton(),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Forgot Password
-        AnimatedFormField(
-          delay: const Duration(milliseconds: 900),
-          child: TextButton(
-            onPressed: () {
-              // Handle forgot password
-            },
-            child: Text('Forgot password?', style: AppTextStyles.subheader16Bold),
-          ),
+          delay: const Duration(milliseconds: 1000),
+          child: const SignupButton(),
         ),
 
         const Spacer(),
 
-        // Register Link
+        // Login Link
         AnimatedFormField(
-          delay: const Duration(milliseconds: 1000),
+          delay: const Duration(milliseconds: 1100),
           child: GestureDetector(
             onTap: () {
-              Navigator.of(context).push(
+              Navigator.of(context).pushReplacement(
                 SlidePageRoute(
-                  child: const SignupScreen(),
-                  direction: AxisDirection.right,
+                  child: const LoginScreen(),
+                  direction: AxisDirection.left,
                 ),
               );
             },
             child: RichText(
               text: TextSpan(
-                text: "Don't have an account? ",
+                text: "Already have an account? ",
                 style: AppTextStyles.subheader16Regular.copyWith(
                   color: AppColors.textDarkest,
                 ),
                 children: [
-                  TextSpan(text: 'Register', style: AppTextStyles.linkText),
+                  TextSpan(text: 'Log In', style: AppTextStyles.linkText),
                 ],
               ),
             ),
@@ -257,24 +266,39 @@ class LoginFormSection extends StatelessWidget {
   }
 }
 
-class LoginForm extends StatelessWidget {
-  const LoginForm({super.key});
+class SignupForm extends StatelessWidget {
+  const SignupForm({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LoginFormCubit, LoginFormState>(
+    return BlocBuilder<SignupFormCubit, SignupFormState>(
       builder: (context, state) {
         return Column(
           children: [
-            // Email Field
+            // Full Name Field
             AnimatedFormField(
               delay: const Duration(milliseconds: 400),
+              child: CustomTextFormField(
+                label: 'Full name',
+                hintText: 'Full name',
+                initialValue: state.name.value,
+                onChanged: (value) {
+                  context.read<SignupFormCubit>().nameChanged(value);
+                },
+                errorText: state.name.displayError?.text,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Email Field
+            AnimatedFormField(
+              delay: const Duration(milliseconds: 600),
               child: CustomTextFormField(
                 label: 'Email',
                 hintText: 'Email',
                 initialValue: state.email.value,
                 onChanged: (value) {
-                  context.read<LoginFormCubit>().emailChanged(value);
+                  context.read<SignupFormCubit>().emailChanged(value);
                 },
                 errorText: state.email.displayError?.text,
               ),
@@ -283,14 +307,14 @@ class LoginForm extends StatelessWidget {
 
             // Password Field
             AnimatedFormField(
-              delay: const Duration(milliseconds: 600),
+              delay: const Duration(milliseconds: 800),
               child: CustomTextFormField(
                 label: 'Password',
-                hintText: '•••••••••',
+                hintText: 'Password',
                 obscureText: !state.isPasswordVisible,
                 initialValue: state.password.value,
                 onChanged: (value) {
-                  context.read<LoginFormCubit>().passwordChanged(value);
+                  context.read<SignupFormCubit>().passwordChanged(value);
                 },
                 errorText: state.password.displayError?.text,
                 suffixIcon: IconButton(
@@ -301,7 +325,7 @@ class LoginForm extends StatelessWidget {
                     color: AppColors.textLight,
                   ),
                   onPressed: () {
-                    context.read<LoginFormCubit>().togglePasswordVisibility();
+                    context.read<SignupFormCubit>().togglePasswordVisibility();
                   },
                 ),
               ),
@@ -313,23 +337,24 @@ class LoginForm extends StatelessWidget {
   }
 }
 
-class LoginButton extends StatelessWidget {
-  const LoginButton({super.key});
+class SignupButton extends StatelessWidget {
+  const SignupButton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LoginFormCubit, LoginFormState>(
+    return BlocBuilder<SignupFormCubit, SignupFormState>(
       builder: (context, formState) {
         return BlocBuilder<AuthCubit, AuthState>(
           builder: (context, authState) {
             return CustomButton(
-              text: 'Log In',
+              text: 'Get Started',
               isLoading: authState.status == AuthStatus.loading,
               onPressed: formState.isValid
                   ? () {
-                      context.read<AuthCubit>().signIn(
+                      context.read<AuthCubit>().signUp(
                         formState.email.value,
                         formState.password.value,
+                        formState.name.value,
                       );
                     }
                   : null,
