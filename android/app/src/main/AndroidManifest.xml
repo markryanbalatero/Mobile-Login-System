@@ -30,7 +30,13 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Google Sign-in configuration -->
+        <meta-data
+            android:name="com.google.android.gms.auth.api.signin.GoogleSignInOptions"
+            android:value="@string/default_web_client_id" />
     </application>
+    <!-- Internet permission for Firebase and Google Sign-in -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
