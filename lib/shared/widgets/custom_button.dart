@@ -35,7 +35,7 @@ class CustomButton extends StatelessWidget {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.loadingIndicator),
                 ),
               )
             : Text(text, style: AppTextStyles.buttonText),

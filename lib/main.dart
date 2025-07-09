@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/app_colors.dart';
+import 'core/constants/app_strings.dart';
 import 'features/auth/cubit/auth_cubit.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'screens/home_screen.dart';
@@ -27,7 +29,7 @@ class MyApp extends StatelessWidget {
     return BlocProvider(
       create: (context) => AuthCubit(),
       child: MaterialApp(
-        title: 'VibeHub',
+        title: AppStrings.appTitle,
         theme: AppTheme.lightTheme,
         home: const AppView(),
         debugShowCheckedModeBanner: false,
@@ -48,7 +50,7 @@ class AppView extends StatelessWidget {
           // Home screen - dark status bar
           SystemChrome.setSystemUIOverlayStyle(
             const SystemUiOverlayStyle(
-              statusBarColor: Colors.transparent,
+              statusBarColor: AppColors.transparent,
               statusBarIconBrightness: Brightness.dark,
               statusBarBrightness: Brightness.light,
             ),
@@ -57,7 +59,7 @@ class AppView extends StatelessWidget {
           // Login screen - light status bar (for dark background)
           SystemChrome.setSystemUIOverlayStyle(
             const SystemUiOverlayStyle(
-              statusBarColor: Colors.transparent,
+              statusBarColor: AppColors.transparent,
               statusBarIconBrightness: Brightness.light,
               statusBarBrightness: Brightness.dark,
             ),

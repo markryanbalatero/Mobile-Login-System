@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../core/models/name.dart';
 import '../../../core/models/email.dart';
 import '../../../core/models/password.dart';
@@ -9,7 +10,6 @@ import '../../../shared/widgets/custom_text_form_field.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/animations/slide_page_route.dart';
 import '../../../shared/animations/animated_form_field.dart';
-import '../../../screens/home_screen.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/signup_form_cubit.dart';
 import 'login_screen.dart';
@@ -40,16 +40,16 @@ class SignupView extends StatelessWidget {
         if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage ?? 'An error occurred'),
-              backgroundColor: Colors.red,
+              content: Text(state.errorMessage ?? AppStrings.errorOccurred),
+              backgroundColor: AppColors.error,
             ),
           );
         } else if (state.status == AuthStatus.signupSuccess) {
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Account created successfully!'),
-              backgroundColor: Colors.green,
+              content: const Text(AppStrings.accountCreatedSuccess),
+              backgroundColor: AppColors.success,
               duration: const Duration(seconds: 2),
             ),
           );
@@ -113,7 +113,7 @@ class SignupView extends StatelessWidget {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
+                                  color: AppColors.shadowLight,
                                   blurRadius: 10,
                                   offset: const Offset(0, -5),
                                 ),
@@ -183,7 +183,7 @@ class HeaderSection extends StatelessWidget {
                   'assets/icons/star.png',
                   width: 24,
                   height: 24,
-                  color: Colors.white,
+                  color: AppColors.white,
                 ),
               ),
             ),

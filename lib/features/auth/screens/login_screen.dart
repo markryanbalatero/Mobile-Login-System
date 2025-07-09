@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../core/models/email.dart';
 import '../../../core/models/password.dart';
 import '../../../shared/widgets/custom_text_form_field.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/widgets/google_signin_button.dart';
+import '../../../shared/widgets/or_divider.dart';
 import '../../../shared/animations/slide_page_route.dart';
 import '../../../shared/animations/animated_form_field.dart';
 import '../../../screens/home_screen.dart';
@@ -39,8 +42,8 @@ class LoginView extends StatelessWidget {
         if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage ?? 'An error occurred'),
-              backgroundColor: Colors.red,
+              content: Text(state.errorMessage ?? AppStrings.errorOccurred),
+              backgroundColor: AppColors.error,
             ),
           );
         } else if (state.status == AuthStatus.authenticated) {
@@ -67,7 +70,7 @@ class LoginView extends StatelessWidget {
                         child: Opacity(
                           opacity: 0.7,
                           child: Image.asset(
-                            'assets/images/bg.png',
+                            AppStrings.backgroundImage,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -91,14 +94,14 @@ class LoginView extends StatelessWidget {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
+                                  color: AppColors.shadowLight,
                                   blurRadius: 10,
                                   offset: const Offset(0, -5),
                                 ),
                               ],
                             ),
                             child: const Padding(
-                              padding: EdgeInsets.fromLTRB(22, 24, 22, 24),
+                              padding: EdgeInsets.fromLTRB(22, 20, 22, 16),
                               child: LoginFormSection(),
                             ),
                           ),
@@ -122,7 +125,7 @@ class HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    final totalHeight = 280 + statusBarHeight; // Reduced from 310 to 280
+    final totalHeight = 200 + statusBarHeight; // Reduced from 240 to 200 for more content space
 
     return SizedBox(
       height: totalHeight,
@@ -134,15 +137,15 @@ class HeaderSection extends StatelessWidget {
             left: 0,
             right: 0,
             top: statusBarHeight + 20,
-            bottom: 43,
+            bottom: 40,
             child: Center(
-              child: Image.asset(
-                'assets/images/rocket.png',
-                width: 250,
-                height: 200,
-                fit: BoxFit.contain,
+                child: Image.asset(
+                  AppStrings.rocketImage,
+                  width: 200,
+                  height: 160,
+                  fit: BoxFit.contain,
+                ),
               ),
-            ),
           ),
 
           // Logo positioned in status bar area
@@ -158,10 +161,10 @@ class HeaderSection extends StatelessWidget {
               ),
               child: Center(
                 child: Image.asset(
-                  'assets/icons/star.png',
+                  AppStrings.starIcon,
                   width: 24,
                   height: 24,
-                  color: Colors.white,
+                  color: AppColors.white,
                 ),
               ),
             ),
@@ -186,25 +189,25 @@ class LoginFormSection extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                'Welcome back!',
+                AppStrings.welcomeBack,
                 style: AppTextStyles.heading28Bold,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
-                'Login to continue with VibeHub',
+                AppStrings.loginSubtitle,
                 style: AppTextStyles.subheader16Regular,
                 textAlign: TextAlign.center,
               ),
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 12), // Reduced from 16
 
         // Form Fields
         const LoginForm(),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 16), // Reduced from 20
 
         // Login Button
         AnimatedFormField(
@@ -212,42 +215,66 @@ class LoginFormSection extends StatelessWidget {
           child: const LoginButton(),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 16), // Reduced from 20
+
+        // Or Divider
+        AnimatedFormField(
+          delay: const Duration(milliseconds: 850),
+          child: OrDivider(text: AppStrings.orContinueWith),
+        ),
+
+        const SizedBox(height: 16), // Reduced from 20
+
+        // Google Sign In Button
+        AnimatedFormField(
+          delay: const Duration(milliseconds: 900),
+          child: GoogleSignInButton(
+            onPressed: () {
+              // Handle Google sign in
+              // TODO: Implement Google sign in logic
+            },
+          ),
+        ),
+
+        const SizedBox(height: 16), // Reduced from 20
 
         // Forgot Password
         AnimatedFormField(
-          delay: const Duration(milliseconds: 900),
+          delay: const Duration(milliseconds: 950),
           child: TextButton(
             onPressed: () {
               // Handle forgot password
             },
-            child: Text('Forgot password?', style: AppTextStyles.subheader16Bold),
+            child: Text(AppStrings.forgotPassword, style: AppTextStyles.subheader16Bold),
           ),
         ),
 
-        const Spacer(),
+        const SizedBox(height: 16), // Reduced from 24
 
         // Register Link
         AnimatedFormField(
           delay: const Duration(milliseconds: 1000),
-          child: GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                SlidePageRoute(
-                  child: const SignupScreen(),
-                  direction: AxisDirection.right,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16), // Added bottom padding for safety
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  SlidePageRoute(
+                    child: const SignupScreen(),
+                    direction: AxisDirection.right,
+                  ),
+                );
+              },
+              child: RichText(
+                text: TextSpan(
+                  text: AppStrings.noAccount,
+                  style: AppTextStyles.subheader16Regular.copyWith(
+                    color: AppColors.textDarkest,
+                  ),
+                  children: [
+                    TextSpan(text: AppStrings.registerLink, style: AppTextStyles.linkText),
+                  ],
                 ),
-              );
-            },
-            child: RichText(
-              text: TextSpan(
-                text: "Don't have an account? ",
-                style: AppTextStyles.subheader16Regular.copyWith(
-                  color: AppColors.textDarkest,
-                ),
-                children: [
-                  TextSpan(text: 'Register', style: AppTextStyles.linkText),
-                ],
               ),
             ),
           ),
@@ -270,8 +297,8 @@ class LoginForm extends StatelessWidget {
             AnimatedFormField(
               delay: const Duration(milliseconds: 400),
               child: CustomTextFormField(
-                label: 'Email',
-                hintText: 'Email',
+                label: AppStrings.emailLabel,
+                hintText: AppStrings.emailHint,
                 initialValue: state.email.value,
                 onChanged: (value) {
                   context.read<LoginFormCubit>().emailChanged(value);
@@ -285,8 +312,8 @@ class LoginForm extends StatelessWidget {
             AnimatedFormField(
               delay: const Duration(milliseconds: 600),
               child: CustomTextFormField(
-                label: 'Password',
-                hintText: '•••••••••',
+                label: AppStrings.passwordLabel,
+                hintText: AppStrings.passwordHint,
                 obscureText: !state.isPasswordVisible,
                 initialValue: state.password.value,
                 onChanged: (value) {
@@ -323,7 +350,7 @@ class LoginButton extends StatelessWidget {
         return BlocBuilder<AuthCubit, AuthState>(
           builder: (context, authState) {
             return CustomButton(
-              text: 'Log In',
+              text: AppStrings.loginButton,
               isLoading: authState.status == AuthStatus.loading,
               onPressed: formState.isValid
                   ? () {

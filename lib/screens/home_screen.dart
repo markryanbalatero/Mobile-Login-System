@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/constants/app_strings.dart';
 import '../../features/auth/cubit/auth_cubit.dart';
 import '../../shared/widgets/custom_button.dart';
 
@@ -15,8 +16,8 @@ class HomeScreen extends StatelessWidget {
         if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage ?? 'An error occurred'),
-              backgroundColor: Colors.red,
+              content: Text(state.errorMessage ?? AppStrings.errorOccurred),
+              backgroundColor: AppColors.error,
               duration: const Duration(seconds: 3),
             ),
           );
@@ -25,7 +26,7 @@ class HomeScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: Text('VibeHub', style: AppTextStyles.heading28Bold),
+          title: Text(AppStrings.appName, style: AppTextStyles.heading28Bold),
           backgroundColor: AppColors.background,
           elevation: 0,
           actions: [
@@ -47,11 +48,11 @@ class HomeScreen extends StatelessWidget {
                 color: AppColors.primaryButton,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check, size: 60, color: Colors.white),
+              child: const Icon(Icons.check, size: 60, color: AppColors.white),
             ),
             const SizedBox(height: 32),
             Text(
-              'Welcome to VibeHub!',
+              AppStrings.welcomeToVibeHub,
               style: AppTextStyles.heading28Bold,
               textAlign: TextAlign.center,
             ),
@@ -67,13 +68,13 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Text(
-              'You have successfully logged in to your account.',
+              AppStrings.youreLoggedIn,
               style: AppTextStyles.subheader16Regular,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 48),
             CustomButton(
-              text: 'Logout',
+              text: AppStrings.logoutButton,
               onPressed: () => _showLogoutDialog(context),
               backgroundColor: AppColors.textLight,
               textColor: AppColors.textWhite,
@@ -95,11 +96,11 @@ class HomeScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           title: Text(
-            'Logout',
+            AppStrings.logoutConfirmTitle,
             style: AppTextStyles.heading28Bold,
           ),
           content: Text(
-            'Are you sure you want to logout?',
+            AppStrings.logoutConfirmMessage,
             style: AppTextStyles.subheader16Regular,
           ),
           actions: [
@@ -108,7 +109,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.of(context).pop(); // Close dialog
               },
               child: Text(
-                'Cancel',
+                AppStrings.cancelButton,
                 style: AppTextStyles.subheader16Bold.copyWith(
                   color: AppColors.textLight,
                 ),
@@ -117,14 +118,14 @@ class HomeScreen extends StatelessWidget {
             BlocBuilder<AuthCubit, AuthState>(
               builder: (context, state) {
                 return CustomButton(
-                  text: 'Logout',
+                  text: AppStrings.logoutButton,
                   isLoading: state.status == AuthStatus.loading,
                   onPressed: () {
                     Navigator.of(context).pop(); // Close dialog
                     context.read<AuthCubit>().signOut();
                   },
-                  backgroundColor: Colors.red,
-                  textColor: Colors.white,
+                  backgroundColor: AppColors.error,
+                  textColor: AppColors.white,
                 );
               },
             ),

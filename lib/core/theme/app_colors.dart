@@ -18,6 +18,17 @@ class AppColors {
   static const Color headerBackground = Color(0xFF32343D);
 
   // Status Bar
-  static const Color statusBarLight = Colors.white;
-  static const Color statusBarDark = Colors.black;
+  static const Color statusBarLight = Color(0xFFFFFFFF);
+  static const Color statusBarDark = Color(0xFF000000);
+
+  // System Colors
+  static const Color transparent = Color(0x00000000);
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color black = Color(0xFF000000);
+  static const Color error = Color(0xFFD32F2F);
+  static const Color success = Color(0xFF388E3C);
+
+  // Shadow and Overlay
+  static const Color shadowLight = Color(0x1A000000); // 10% black opacity
+  static const Color loadingIndicator = Color(0xFFFFFFFF);
 }
