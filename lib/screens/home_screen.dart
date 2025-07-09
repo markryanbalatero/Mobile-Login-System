@@ -73,11 +73,18 @@ class HomeScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 48),
-            CustomButton(
-              text: AppStrings.logoutButton,
-              onPressed: () => _showLogoutDialog(context),
-              backgroundColor: AppColors.textLight,
-              textColor: AppColors.textWhite,
+            BlocBuilder<AuthCubit, AuthState>(
+              builder: (context, state) {
+                return CustomButton(
+                  text: AppStrings.logoutButton,
+                  isLoading: state.status == AuthStatus.loading,
+                  onPressed: state.status == AuthStatus.loading 
+                      ? null 
+                      : () => _showLogoutDialog(context),
+                  backgroundColor: AppColors.textLight,
+                  textColor: AppColors.textWhite,
+                );
+              },
             ),
           ],
         ),
@@ -120,7 +127,7 @@ class HomeScreen extends StatelessWidget {
                 return CustomButton(
                   text: AppStrings.logoutButton,
                   isLoading: state.status == AuthStatus.loading,
-                  onPressed: () {
+                  onPressed: state.status == AuthStatus.loading ? null : () {
                     Navigator.of(context).pop(); // Close dialog
                     context.read<AuthCubit>().signOut();
                   },

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/services/simple_firebase_auth_service.dart';
+import '../../../core/services/google_signin_service.dart';
 
 part 'auth_state.dart';
 
@@ -21,11 +22,15 @@ class AuthCubit extends Cubit<AuthState> {
         emit(state.copyWith(
           status: AuthStatus.authenticated,
           user: user.email ?? '',
+          errorMessage: null,  // Clear any previous errors
         ));
       } else {
+        // User signed out - reset all flags and clear state
+        _ignoreAuthStateChanges = false;
         emit(state.copyWith(
           status: AuthStatus.unauthenticated,
           user: null,
+          errorMessage: null,  // Clear any previous errors
         ));
       }
     });
@@ -96,9 +101,15 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signOut() async {
+    emit(state.copyWith(status: AuthStatus.loading));
+    
     try {
-      await SimpleFirebaseAuthService.signOut();
-      // State will be updated by the auth state listener
+      // First, sign out from Google (if signed in with Google)
+      // This also handles Firebase Auth sign out
+      await GoogleSignInService.signOut();
+      
+      // The auth state listener will automatically emit unauthenticated state
+      // No need to manually emit here as the listener handles it
     } catch (e) {
       emit(
         state.copyWith(
@@ -118,6 +129,30 @@ class AuthCubit extends Cubit<AuthState> {
       // The auth state listener will emit unauthenticated state
     } catch (e) {
       _ignoreAuthStateChanges = false;
+      emit(
+        state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: _getErrorMessage(e),
+        ),
+      );
+    }
+  }
+
+  Future<void> signInWithGoogle() async {
+    emit(state.copyWith(status: AuthStatus.loading));
+
+    try {
+      final user = await GoogleSignInService.signInWithGoogle();
+      
+      if (user != null) {
+        // State will be updated by the auth state listener
+      } else {
+        emit(state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Google sign-in was cancelled',
+        ));
+      }
+    } catch (e) {
       emit(
         state.copyWith(
           status: AuthStatus.error,

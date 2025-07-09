@@ -6,14 +6,16 @@ class SimpleFirebaseAuthService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Initialize auth settings to disable reCAPTCHA
+  // Initialize auth settings to disable reCAPTCHA and web flows
   static Future<void> initialize() async {
     try {
-      // Set auth settings to disable reCAPTCHA verification
-      await _auth.setSettings(
-        appVerificationDisabledForTesting: true,
-        forceRecaptchaFlow: false,
-      );
+      // Set auth settings to disable reCAPTCHA verification and web flows
+      if (!kIsWeb) {
+        await _auth.setSettings(
+          appVerificationDisabledForTesting: true,
+          forceRecaptchaFlow: false,
+        );
+      }
     } catch (e) {
       debugPrint('Failed to configure auth settings: $e');
     }
@@ -90,6 +92,7 @@ class SimpleFirebaseAuthService {
         'uid': user.uid,
         'email': user.email,
         'fullName': fullName,
+        'provider': 'email',
         'createdAt': FieldValue.serverTimestamp(),
         'lastSignIn': FieldValue.serverTimestamp(),
       });

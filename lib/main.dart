@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
 import 'core/constants/app_strings.dart';
@@ -17,6 +19,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Configure Firebase Auth to prevent web-based flows on mobile
+  if (!kIsWeb) {
+    await FirebaseAuth.instance.setSettings(
+      appVerificationDisabledForTesting: true,
+      forceRecaptchaFlow: false,
+    );
+  }
   
   runApp(const MyApp());
 }

@@ -1,27 +1,56 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 
 class GoogleSignInService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  // Configure GoogleSignIn for mobile platforms only
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+      'profile',
+    ],
+    // Force native sign-in for mobile platforms
+    forceCodeForRefreshToken: !kIsWeb,
+  );
 
   static Future<User?> signInWithGoogle() async {
     try {
-      // Create a GoogleAuthProvider instance
-      GoogleAuthProvider googleProvider = GoogleAuthProvider();
-      
-      // Add additional scopes if needed
-      googleProvider.addScope('email');
-      googleProvider.addScope('profile');
-      
-      // You can also add custom parameters
-      googleProvider.setCustomParameters({
-        'login_hint': 'user@example.com'
-      });
+      // Ensure we're not on web platform
+      if (kIsWeb) {
+        throw Exception('Web platform detected. Use Firebase Auth web flows instead.');
+      }
 
-      // Sign in with Firebase Auth using Google provider
-      final UserCredential userCredential = await _auth.signInWithProvider(googleProvider);
+      // Clear any existing sign-in session
+      await _googleSignIn.signOut();
+      
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      // If the user cancels the sign-in, return null
+      if (googleUser == null) {
+        return null;
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Ensure we have both tokens
+      if (googleAuth.accessToken == null || googleAuth.idToken == null) {
+        throw Exception('Failed to obtain Google authentication tokens');
+      }
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
       
       final user = userCredential.user;
       if (user != null) {
@@ -38,9 +67,20 @@ class GoogleSignInService {
 
   static Future<void> signOut() async {
     try {
+      // Always try to sign out from Google first (even if not signed in with Google)
+      // This is safe to call even if user didn't sign in with Google
+      try {
+        await _googleSignIn.signOut();
+      } catch (e) {
+        debugPrint('Google sign out error (safe to ignore): $e');
+      }
+      
+      // Then sign out from Firebase Auth
       await _auth.signOut();
+      
+      debugPrint('Successfully signed out from all services');
     } catch (e) {
-      debugPrint('Error signing out: $e');
+      debugPrint('Error during sign out: $e');
       rethrow;
     }
   }

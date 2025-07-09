@@ -228,10 +228,14 @@ class LoginFormSection extends StatelessWidget {
         // Google Sign In Button
         AnimatedFormField(
           delay: const Duration(milliseconds: 900),
-          child: GoogleSignInButton(
-            onPressed: () {
-              // Handle Google sign in
-              // TODO: Implement Google sign in logic
+          child: BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              return GoogleSignInButton(
+                isLoading: state.status == AuthStatus.loading,
+                onPressed: () {
+                  context.read<AuthCubit>().signInWithGoogle();
+                },
+              );
             },
           ),
         ),
