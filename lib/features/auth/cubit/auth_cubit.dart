@@ -10,27 +10,23 @@ class AuthCubit extends Cubit<AuthState> {
   bool _ignoreAuthStateChanges = false;
 
   AuthCubit() : super(const AuthState()) {
-    // Initialize the simplified Firebase service
     SimpleFirebaseAuthService.initialize();
     
-    // Listen to auth state changes
     SimpleFirebaseAuthService.authStateChanges.listen((User? user) {
-      // Don't emit authentication changes during signup success flow
       if (_ignoreAuthStateChanges) return;
       
       if (user != null) {
         emit(state.copyWith(
           status: AuthStatus.authenticated,
           user: user.email ?? '',
-          errorMessage: null,  // Clear any previous errors
+          errorMessage: null,
         ));
       } else {
-        // User signed out - reset all flags and clear state
         _ignoreAuthStateChanges = false;
         emit(state.copyWith(
           status: AuthStatus.unauthenticated,
           user: null,
-          errorMessage: null,  // Clear any previous errors
+          errorMessage: null,
         ));
       }
     });
@@ -46,7 +42,6 @@ class AuthCubit extends Cubit<AuthState> {
       );
       
       if (user != null) {
-        // State will be updated by the auth state listener
       } else {
         emit(state.copyWith(
           status: AuthStatus.error,
@@ -67,7 +62,6 @@ class AuthCubit extends Cubit<AuthState> {
     emit(state.copyWith(status: AuthStatus.loading));
 
     try {
-      // Temporarily ignore auth state changes to prevent automatic navigation
       _ignoreAuthStateChanges = true;
       
       final user = await SimpleFirebaseAuthService.signUp(
@@ -82,7 +76,6 @@ class AuthCubit extends Cubit<AuthState> {
       );
       
       if (user != null) {
-        // Emit signup success state instead of authenticated
         emit(state.copyWith(
           status: AuthStatus.signupSuccess,
           user: user.email ?? '',
@@ -112,8 +105,6 @@ class AuthCubit extends Cubit<AuthState> {
     
     try {
       print('📱 Calling GoogleSignInService.signOut()...');
-      // First, sign out from Google (if signed in with Google)
-      // This also handles Firebase Auth sign out
       await GoogleSignInService.signOut().timeout(
         const Duration(seconds: 10),
         onTimeout: () {
@@ -124,8 +115,6 @@ class AuthCubit extends Cubit<AuthState> {
       
       print('✅ GoogleSignInService.signOut() completed successfully');
       
-      // Immediately emit unauthenticated state after successful logout
-      // Don't wait for the auth state listener as it might not trigger UI updates
       print('🔄 Emitting unauthenticated state...');
       emit(state.copyWith(
         status: AuthStatus.unauthenticated,
@@ -147,11 +136,9 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> completeSignupFlow() async {
     try {
-      // Sign out the user and re-enable auth state listening
       await SimpleFirebaseAuthService.signOut();
       _ignoreAuthStateChanges = false;
       
-      // The auth state listener will emit unauthenticated state
     } catch (e) {
       _ignoreAuthStateChanges = false;
       emit(
@@ -170,7 +157,6 @@ class AuthCubit extends Cubit<AuthState> {
       final user = await GoogleSignInService.signInWithGoogle();
       
       if (user != null) {
-        // State will be updated by the auth state listener
       } else {
         emit(state.copyWith(
           status: AuthStatus.error,

@@ -115,7 +115,7 @@ class HomeScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop();
               },
               child: Text(
                 AppStrings.cancelButton,
@@ -130,7 +130,7 @@ class HomeScreen extends StatelessWidget {
                   text: AppStrings.logoutButton,
                   isLoading: state.status == AuthStatus.loading,
                   onPressed: state.status == AuthStatus.loading ? null : () {
-                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.of(context).pop();
                     context.read<AuthCubit>().signOut();
                   },
                   backgroundColor: AppColors.error,

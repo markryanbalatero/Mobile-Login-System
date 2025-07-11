@@ -6,10 +6,8 @@ class SimpleFirebaseAuthService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Initialize auth settings to disable reCAPTCHA and web flows
   static Future<void> initialize() async {
     try {
-      // Set auth settings to disable reCAPTCHA verification and web flows
       if (!kIsWeb) {
         await _auth.setSettings(
           appVerificationDisabledForTesting: true,
@@ -21,23 +19,18 @@ class SimpleFirebaseAuthService {
     }
   }
 
-  // Get current user
   static User? get currentUser => _auth.currentUser;
 
-  // Stream of auth state changes
   static Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Sign up with email and password (simplified)
   static Future<User?> signUp({
     required String email,
     required String password,
     required String fullName,
   }) async {
     try {
-      // Ensure auth is configured
       await initialize();
       
-      // Create user with timeout to prevent infinite loading
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -50,10 +43,8 @@ class SimpleFirebaseAuthService {
 
       final user = credential.user;
       if (user != null) {
-        // Update display name
         await user.updateDisplayName(fullName);
         
-        // Create user document (non-blocking, ignore errors)
         _createUserDocument(user, fullName).then((_) {
           debugPrint('✅ User document created successfully for: ${user.email}');
         }).catchError((e) {
@@ -68,13 +59,11 @@ class SimpleFirebaseAuthService {
     }
   }
 
-  // Sign in with email and password (simplified)
   static Future<User?> signIn({
     required String email,
     required String password,
   }) async {
     try {
-      // Ensure auth is configured
       await initialize();
       
       final credential = await _auth.signInWithEmailAndPassword(
@@ -89,12 +78,10 @@ class SimpleFirebaseAuthService {
     }
   }
 
-    // Sign out
   static Future<void> signOut() async {
     await _auth.signOut();
   }
 
-  // Create user document in Firestore
   static Future<void> _createUserDocument(User user, String fullName) async {
     try {
       debugPrint('🔄 Creating user document for: ${user.email}');
@@ -109,7 +96,7 @@ class SimpleFirebaseAuthService {
       debugPrint('✅ Firestore document creation completed for: ${user.email}');
     } catch (e) {
       debugPrint('❌ Failed to create user document: $e');
-      rethrow; // Let the caller handle the error
+      rethrow;
     }
   }
 }

@@ -38,8 +38,7 @@ class LoginFormCubit extends Cubit<LoginFormState> {
       return 'Please fill all fields correctly';
     }
     
-    // Return the email and password for the AuthCubit to use
-    return null; // Success - no error message
+    return null;
   }
 
   String get email => state.email.value;

@@ -31,13 +31,11 @@ class _SignupSuccessOverlayState extends State<SignupSuccessOverlay>
   void initState() {
     super.initState();
     
-    // Loading animation controller
     _loadingController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
     );
     
-    // Success animation controller
     _successController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -67,16 +65,13 @@ class _SignupSuccessOverlayState extends State<SignupSuccessOverlay>
       curve: Curves.easeIn,
     ));
     
-    // Start loading animation immediately
     _loadingController.repeat();
     
-    // Schedule a check for the initial auth state after the frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final authCubit = context.read<AuthCubit>();
         final currentState = authCubit.state;
         
-        // If we're already in signupSuccess state, handle it immediately
         if (currentState.status == AuthStatus.signupSuccess && !_showSuccess) {
           debugPrint('🎉 SignupSuccessOverlay: Already in signupSuccess state, handling immediately');
           _handleSignupSuccess();
@@ -86,11 +81,10 @@ class _SignupSuccessOverlayState extends State<SignupSuccessOverlay>
   }
 
   void _handleSignupSuccess() async {
-    if (_showSuccess) return; // Already handled
+    if (_showSuccess) return;
     
     print('🎉 SignupSuccessOverlay: Transitioning to success state');
     
-    // Stop loading and show success
     _loadingController.stop();
     setState(() {
       _showSuccess = true;
@@ -98,11 +92,9 @@ class _SignupSuccessOverlayState extends State<SignupSuccessOverlay>
     
     _successController.forward();
     
-    // Wait for success animation and message display
     await Future.delayed(const Duration(milliseconds: 2000));
     
     if (mounted) {
-      // Complete the flow
       widget.onComplete?.call();
     }
   }
@@ -133,7 +125,6 @@ class _SignupSuccessOverlayState extends State<SignupSuccessOverlay>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Loading or Success Icon
               SizedBox(
                 width: 120,
                 height: 120,
@@ -144,7 +135,6 @@ class _SignupSuccessOverlayState extends State<SignupSuccessOverlay>
               
               const SizedBox(height: 24),
               
-              // Message
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: !_showSuccess
@@ -187,7 +177,6 @@ class _SignupSuccessOverlayState extends State<SignupSuccessOverlay>
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Outer rotating circle
         RotationTransition(
           turns: _loadingAnimation,
           child: Container(
@@ -209,7 +198,6 @@ class _SignupSuccessOverlayState extends State<SignupSuccessOverlay>
           ),
         ),
         
-        // Inner icon
         Container(
           width: 60,
           height: 60,
@@ -267,11 +255,10 @@ class LoadingCirclePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth) / 2;
 
-    // Draw partial circle (about 1/4 of the circle)
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -3.14159 / 2, // Start from top
-      3.14159 / 2, // Draw half circle
+      -3.14159 / 2,
+      3.14159 / 2,
       false,
       paint,
     );

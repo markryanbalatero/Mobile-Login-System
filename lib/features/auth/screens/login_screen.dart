@@ -47,7 +47,6 @@ class LoginView extends StatelessWidget {
             ),
           );
         } else if (state.status == AuthStatus.authenticated) {
-          // Navigate to home screen
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
@@ -61,7 +60,6 @@ class LoginView extends StatelessWidget {
               child: IntrinsicHeight(
                 child: Stack(
                   children: [
-                    // Full screen background image
                     Positioned.fill(
                       child: Container(
                         decoration: const BoxDecoration(
@@ -77,12 +75,9 @@ class LoginView extends StatelessWidget {
                       ),
                     ),
 
-                    // Content overlay
                     Column(
                       children: [
-                        // Header with rocket illustration and logo
                         const HeaderSection(),
-                        // Login form content with rounded corners
                         Expanded(
                           child: Container(
                             width: double.infinity,
@@ -125,14 +120,13 @@ class HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    final totalHeight = 200 + statusBarHeight; // Reduced from 240 to 200 for more content space
+    final totalHeight = 200 + statusBarHeight;
 
     return SizedBox(
       height: totalHeight,
       width: double.infinity,
       child: Stack(
         children: [
-          // Rocket illustration positioned below status bar
           Positioned(
             left: 0,
             right: 0,
@@ -148,7 +142,6 @@ class HeaderSection extends StatelessWidget {
               ),
           ),
 
-          // Logo positioned in status bar area
           Positioned(
             top: statusBarHeight + 16,
             right: 24,
@@ -183,7 +176,6 @@ class LoginFormSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Title Section
         AnimatedFormField(
           delay: const Duration(milliseconds: 200),
           child: Column(
@@ -202,55 +194,48 @@ class LoginFormSection extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 12), // Reduced from 16
+        const SizedBox(height: 12),
 
-        // Form Fields
         const LoginForm(),
 
-        const SizedBox(height: 16), // Reduced from 20
+        const SizedBox(height: 16),
 
-        // Login Button
         AnimatedFormField(
           delay: const Duration(milliseconds: 800),
           child: const LoginButton(),
         ),
 
-        const SizedBox(height: 16), // Reduced from 20
+        const SizedBox(height: 16),
 
-        // Or Divider
         AnimatedFormField(
           delay: const Duration(milliseconds: 850),
           child: OrDivider(text: AppStrings.orContinueWith),
         ),
 
-        const SizedBox(height: 16), // Reduced from 20
+        const SizedBox(height: 16),
 
-        // Google Sign In Button
         AnimatedFormField(
           delay: const Duration(milliseconds: 900),
           child: const GoogleSignInButtonWrapper(),
         ),
 
-        const SizedBox(height: 16), // Reduced from 20
+        const SizedBox(height: 16),
 
-        // Forgot Password
         AnimatedFormField(
           delay: const Duration(milliseconds: 950),
           child: TextButton(
             onPressed: () {
-              // Handle forgot password
             },
             child: Text(AppStrings.forgotPassword, style: AppTextStyles.subheader16Bold),
           ),
         ),
 
-        const SizedBox(height: 16), // Reduced from 24
+        const SizedBox(height: 16),
 
-        // Register Link
         AnimatedFormField(
           delay: const Duration(milliseconds: 1000),
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 16), // Added bottom padding for safety
+            padding: const EdgeInsets.only(bottom: 16),
             child: GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
@@ -288,7 +273,6 @@ class LoginForm extends StatelessWidget {
       builder: (context, state) {
         return Column(
           children: [
-            // Email Field
             AnimatedFormField(
               delay: const Duration(milliseconds: 400),
               child: CustomTextFormField(
@@ -303,7 +287,6 @@ class LoginForm extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Password Field
             AnimatedFormField(
               delay: const Duration(milliseconds: 600),
               child: CustomTextFormField(
@@ -344,13 +327,12 @@ class LoginButton extends StatelessWidget {
       builder: (context, formState) {
         return BlocBuilder<AuthCubit, AuthState>(
           builder: (context, authState) {
-            // Only show loading for regular login, not Google sign-in
             final isEmailLogin = authState.status == AuthStatus.loading;
             
             return CustomButton(
               text: AppStrings.loginButton,
               isLoading: isEmailLogin,
-              backgroundColor: AppColors.textDarkest, // Use professional dark color
+              backgroundColor: AppColors.textDarkest,
               textColor: AppColors.white,
               onPressed: formState.isValid && !isEmailLogin
                   ? () {
@@ -382,7 +364,6 @@ class _GoogleSignInButtonWrapperState extends State<GoogleSignInButtonWrapper> {
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
-        // Reset Google loading when auth completes or fails
         if (state.status == AuthStatus.authenticated || 
             state.status == AuthStatus.error ||
             state.status == AuthStatus.unauthenticated) {

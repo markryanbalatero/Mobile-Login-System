@@ -43,7 +43,6 @@ class SignupFormCubit extends Cubit<SignupFormState> {
       return 'Please fill all fields correctly';
     }
     
-    // Return null for success - no error message
     return null;
   }
 

@@ -11,7 +11,6 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Inter',
 
-      // App Bar Theme
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.transparent,
         elevation: 0,
@@ -19,7 +18,6 @@ class AppTheme {
         toolbarHeight: 0,
       ),
 
-      // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.fieldBackground,
@@ -50,7 +48,6 @@ class AppTheme {
         hintStyle: AppTextStyles.inputText.copyWith(color: AppColors.textLight),
       ),
 
-      // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryButton,
@@ -65,7 +62,6 @@ class AppTheme {
         ),
       ),
 
-      // Text Button Theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.textDarkest,

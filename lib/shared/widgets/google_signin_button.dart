@@ -40,7 +40,6 @@ class GoogleSignInButton extends StatelessWidget {
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Google Icon
                   Image.asset(
                     AppStrings.googleIcon,
                     width: 20,

@@ -9,19 +9,17 @@ import 'core/theme/app_colors.dart';
 import 'core/constants/app_strings.dart';
 import 'features/auth/cubit/auth_cubit.dart';
 import 'features/auth/screens/login_screen.dart';
-import 'features/auth/screens/signup_screen.dart'; // Added import for SignupScreen
+import 'features/auth/screens/signup_screen.dart';
 import 'screens/home_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
-  // Configure Firebase Auth to prevent web-based flows on mobile
   if (!kIsWeb) {
     await FirebaseAuth.instance.setSettings(
       appVerificationDisabledForTesting: true,
@@ -43,8 +41,6 @@ class MyApp extends StatelessWidget {
         buildWhen: (previous, current) {
           print('🔄 MyApp: buildWhen - previous: ${previous.status}, current: ${current.status}');
           
-          // Don't rebuild during loading states to avoid navigation interruption
-          // Let each screen handle its own loading state
           if (current.status == AuthStatus.loading) {
             print('⏳ MyApp: Skipping rebuild during loading state');
             return false;
@@ -55,7 +51,7 @@ class MyApp extends StatelessWidget {
         builder: (context, state) {
           print('🔄 MyApp: Building with auth status: ${state.status}');
           return MaterialApp(
-            key: ValueKey(state.status), // Force rebuild when auth state changes
+            key: ValueKey(state.status),
             title: AppStrings.appTitle,
             theme: AppTheme.lightTheme,
             home: const AppView(),
@@ -76,8 +72,6 @@ class AppView extends StatelessWidget {
       buildWhen: (previous, current) {
         print('🔄 AppView: buildWhen - previous: ${previous.status}, current: ${current.status}');
         
-        // Don't rebuild during loading states to avoid navigation interruption
-        // Let each screen handle its own loading state
         if (current.status == AuthStatus.loading) {
           print('⏳ AppView: Skipping rebuild during loading state');
           return false;
@@ -88,9 +82,7 @@ class AppView extends StatelessWidget {
       builder: (context, state) {
         print('🔄 AppView Builder: Current auth status: ${state.status}');
         
-        // Set different status bar styles based on the screen
         if (state.status == AuthStatus.authenticated) {
-          // Home screen - dark status bar
           SystemChrome.setSystemUIOverlayStyle(
             const SystemUiOverlayStyle(
               statusBarColor: AppColors.transparent,
@@ -99,7 +91,6 @@ class AppView extends StatelessWidget {
             ),
           );
         } else {
-          // Login screen - light status bar (for dark background)
           SystemChrome.setSystemUIOverlayStyle(
             const SystemUiOverlayStyle(
               statusBarColor: AppColors.transparent,

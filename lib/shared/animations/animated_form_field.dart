@@ -58,7 +58,6 @@ class _AnimatedFormFieldState extends State<AnimatedFormField>
       curve: Interval(0.0, 0.9, curve: widget.curve),
     ));
 
-    // Start animation after delay
     Future.delayed(widget.delay, () {
       if (mounted) {
         _controller.forward();

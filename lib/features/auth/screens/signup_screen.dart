@@ -60,20 +60,16 @@ class _SignupViewState extends State<SignupView> {
         }
       },
       buildWhen: (previous, current) {
-        // Only rebuild if we're in states that SignupScreen should handle
-        // Don't rebuild for unauthenticated state - that should be handled by AppView -> LoginScreen
         if (current.status == AuthStatus.unauthenticated) {
           print('📝 SignupView: buildWhen - skipping rebuild for unauthenticated state (should show LoginScreen)');
           return false;
         }
         
-        // Always rebuild for other states including loading (for button loading state)
         return true;
       },
       builder: (context, state) {
         print('📝 SignupView: Builder called with state: ${state.status}');
         
-        // Show success overlay when signup starts (loading) or is successful
         if (state.status == AuthStatus.loading || state.status == AuthStatus.signupSuccess) {
           return SignupSuccessOverlay(
             onComplete: () {
@@ -91,7 +87,6 @@ class _SignupViewState extends State<SignupView> {
                 child: IntrinsicHeight(
                   child: Stack(
                     children: [
-                      // Full screen background image
                       Positioned.fill(
                         child: Container(
                           decoration: const BoxDecoration(
@@ -107,12 +102,9 @@ class _SignupViewState extends State<SignupView> {
                         ),
                       ),
 
-                      // Content overlay
                       Column(
                         children: [
-                          // Header with rocket illustration and logo
                           const HeaderSection(),
-                          // Signup form content with rounded corners
                           Expanded(
                             child: Container(
                               width: double.infinity,
@@ -156,14 +148,13 @@ class HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    final totalHeight = 260 + statusBarHeight; // Slightly smaller for signup
+    final totalHeight = 260 + statusBarHeight;
 
     return SizedBox(
       height: totalHeight,
       width: double.infinity,
       child: Stack(
         children: [
-          // Rocket illustration positioned below status bar
           Positioned(
             left: 0,
             right: 0,
@@ -179,7 +170,6 @@ class HeaderSection extends StatelessWidget {
             ),
           ),
 
-          // Logo positioned in status bar area
           Positioned(
             top: statusBarHeight + 16,
             right: 24,
@@ -214,7 +204,6 @@ class SignupFormSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Title Section
         AnimatedFormField(
           delay: const Duration(milliseconds: 200),
           child: Column(
@@ -235,12 +224,10 @@ class SignupFormSection extends StatelessWidget {
         ),
         const SizedBox(height: 20),
 
-        // Form Fields
         const SignupForm(),
 
         const SizedBox(height: 20),
 
-        // Signup Button
         AnimatedFormField(
           delay: const Duration(milliseconds: 1000),
           child: const SignupButton(),
@@ -248,7 +235,6 @@ class SignupFormSection extends StatelessWidget {
 
         const Spacer(),
 
-        // Login Link
         AnimatedFormField(
           delay: const Duration(milliseconds: 1100),
           child: GestureDetector(
@@ -287,7 +273,6 @@ class SignupForm extends StatelessWidget {
       builder: (context, state) {
         return Column(
           children: [
-            // Full Name Field
             AnimatedFormField(
               delay: const Duration(milliseconds: 400),
               child: CustomTextFormField(
@@ -302,7 +287,6 @@ class SignupForm extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Email Field
             AnimatedFormField(
               delay: const Duration(milliseconds: 600),
               child: CustomTextFormField(
@@ -317,7 +301,6 @@ class SignupForm extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Password Field
             AnimatedFormField(
               delay: const Duration(milliseconds: 800),
               child: CustomTextFormField(
@@ -358,13 +341,12 @@ class SignupButton extends StatelessWidget {
       builder: (context, formState) {
         return BlocBuilder<AuthCubit, AuthState>(
           builder: (context, authState) {
-            // Don't show loading on button - the overlay handles loading indication
             final isProcessing = authState.status == AuthStatus.loading || 
                                 authState.status == AuthStatus.signupSuccess;
             
             return CustomButton(
               text: 'Get Started',
-              isLoading: false, // Never show loading on button
+              isLoading: false,
               onPressed: formState.isValid && !isProcessing
                   ? () {
                       context.read<AuthCubit>().signUp(
