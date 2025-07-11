@@ -9,6 +9,7 @@ import 'core/theme/app_colors.dart';
 import 'core/constants/app_strings.dart';
 import 'features/auth/cubit/auth_cubit.dart';
 import 'features/auth/screens/login_screen.dart';
+import 'features/auth/screens/signup_screen.dart'; // Added import for SignupScreen
 import 'screens/home_screen.dart';
 import 'firebase_options.dart';
 
@@ -38,11 +39,29 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => AuthCubit(),
-      child: MaterialApp(
-        title: AppStrings.appTitle,
-        theme: AppTheme.lightTheme,
-        home: const AppView(),
-        debugShowCheckedModeBanner: false,
+      child: BlocBuilder<AuthCubit, AuthState>(
+        buildWhen: (previous, current) {
+          print('🔄 MyApp: buildWhen - previous: ${previous.status}, current: ${current.status}');
+          
+          // Don't rebuild during loading states to avoid navigation interruption
+          // Let each screen handle its own loading state
+          if (current.status == AuthStatus.loading) {
+            print('⏳ MyApp: Skipping rebuild during loading state');
+            return false;
+          }
+          
+          return previous.status != current.status;
+        },
+        builder: (context, state) {
+          print('🔄 MyApp: Building with auth status: ${state.status}');
+          return MaterialApp(
+            key: ValueKey(state.status), // Force rebuild when auth state changes
+            title: AppStrings.appTitle,
+            theme: AppTheme.lightTheme,
+            home: const AppView(),
+            debugShowCheckedModeBanner: false,
+          );
+        },
       ),
     );
   }
@@ -54,7 +73,21 @@ class AppView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthCubit, AuthState>(
+      buildWhen: (previous, current) {
+        print('🔄 AppView: buildWhen - previous: ${previous.status}, current: ${current.status}');
+        
+        // Don't rebuild during loading states to avoid navigation interruption
+        // Let each screen handle its own loading state
+        if (current.status == AuthStatus.loading) {
+          print('⏳ AppView: Skipping rebuild during loading state');
+          return false;
+        }
+        
+        return previous.status != current.status;
+      },
       builder: (context, state) {
+        print('🔄 AppView Builder: Current auth status: ${state.status}');
+        
         // Set different status bar styles based on the screen
         if (state.status == AuthStatus.authenticated) {
           // Home screen - dark status bar
@@ -78,12 +111,16 @@ class AppView extends StatelessWidget {
 
         switch (state.status) {
           case AuthStatus.authenticated:
+            print('📱 AppView: Showing HomeScreen');
             return const HomeScreen();
+          case AuthStatus.signupSuccess:
+            print('🎉 AppView: Showing SignupScreen (for success snackbar)');
+            return const SignupScreen();
           case AuthStatus.unauthenticated:
           case AuthStatus.initial:
-          case AuthStatus.loading:
           case AuthStatus.error:
-          case AuthStatus.signupSuccess:
+          case AuthStatus.loading:
+            print('🔑 AppView: Showing LoginScreen');
             return const LoginScreen();
         }
       },

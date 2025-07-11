@@ -228,16 +228,7 @@ class LoginFormSection extends StatelessWidget {
         // Google Sign In Button
         AnimatedFormField(
           delay: const Duration(milliseconds: 900),
-          child: BlocBuilder<AuthCubit, AuthState>(
-            builder: (context, state) {
-              return GoogleSignInButton(
-                isLoading: state.status == AuthStatus.loading,
-                onPressed: () {
-                  context.read<AuthCubit>().signInWithGoogle();
-                },
-              );
-            },
-          ),
+          child: const GoogleSignInButtonWrapper(),
         ),
 
         const SizedBox(height: 16), // Reduced from 20
@@ -353,10 +344,15 @@ class LoginButton extends StatelessWidget {
       builder: (context, formState) {
         return BlocBuilder<AuthCubit, AuthState>(
           builder: (context, authState) {
+            // Only show loading for regular login, not Google sign-in
+            final isEmailLogin = authState.status == AuthStatus.loading;
+            
             return CustomButton(
               text: AppStrings.loginButton,
-              isLoading: authState.status == AuthStatus.loading,
-              onPressed: formState.isValid
+              isLoading: isEmailLogin,
+              backgroundColor: AppColors.textDarkest, // Use professional dark color
+              textColor: AppColors.white,
+              onPressed: formState.isValid && !isEmailLogin
                   ? () {
                       context.read<AuthCubit>().signIn(
                         formState.email.value,
@@ -368,6 +364,44 @@ class LoginButton extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class GoogleSignInButtonWrapper extends StatefulWidget {
+  const GoogleSignInButtonWrapper({super.key});
+
+  @override
+  State<GoogleSignInButtonWrapper> createState() => _GoogleSignInButtonWrapperState();
+}
+
+class _GoogleSignInButtonWrapperState extends State<GoogleSignInButtonWrapper> {
+  bool _isGoogleLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        // Reset Google loading when auth completes or fails
+        if (state.status == AuthStatus.authenticated || 
+            state.status == AuthStatus.error ||
+            state.status == AuthStatus.unauthenticated) {
+          if (_isGoogleLoading) {
+            setState(() {
+              _isGoogleLoading = false;
+            });
+          }
+        }
+      },
+      child: GoogleSignInButton(
+        isLoading: _isGoogleLoading,
+        onPressed: () {
+          setState(() {
+            _isGoogleLoading = true;
+          });
+          context.read<AuthCubit>().signInWithGoogle();
+        },
+      ),
     );
   }
 }

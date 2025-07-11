@@ -37,10 +37,15 @@ class SimpleFirebaseAuthService {
       // Ensure auth is configured
       await initialize();
       
-      // Create user
+      // Create user with timeout to prevent infinite loading
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Account creation timed out. Please try again.');
+        },
       );
 
       final user = credential.user;
@@ -48,8 +53,12 @@ class SimpleFirebaseAuthService {
         // Update display name
         await user.updateDisplayName(fullName);
         
-        // Create user document
-        await _createUserDocument(user, fullName);
+        // Create user document (non-blocking, ignore errors)
+        _createUserDocument(user, fullName).then((_) {
+          debugPrint('✅ User document created successfully for: ${user.email}');
+        }).catchError((e) {
+          debugPrint('❌ Failed to create user document (non-fatal): $e');
+        });
       }
 
       return user;
@@ -80,7 +89,7 @@ class SimpleFirebaseAuthService {
     }
   }
 
-  // Sign out
+    // Sign out
   static Future<void> signOut() async {
     await _auth.signOut();
   }
@@ -88,6 +97,7 @@ class SimpleFirebaseAuthService {
   // Create user document in Firestore
   static Future<void> _createUserDocument(User user, String fullName) async {
     try {
+      debugPrint('🔄 Creating user document for: ${user.email}');
       await _firestore.collection('users').doc(user.uid).set({
         'uid': user.uid,
         'email': user.email,
@@ -96,8 +106,10 @@ class SimpleFirebaseAuthService {
         'createdAt': FieldValue.serverTimestamp(),
         'lastSignIn': FieldValue.serverTimestamp(),
       });
+      debugPrint('✅ Firestore document creation completed for: ${user.email}');
     } catch (e) {
-      debugPrint('Failed to create user document: $e');
+      debugPrint('❌ Failed to create user document: $e');
+      rethrow; // Let the caller handle the error
     }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -8,6 +9,7 @@ import '../../../core/models/email.dart';
 import '../../../core/models/password.dart';
 import '../../../shared/widgets/custom_text_form_field.dart';
 import '../../../shared/widgets/custom_button.dart';
+import '../../../shared/widgets/signup_success_overlay.dart';
 import '../../../shared/animations/slide_page_route.dart';
 import '../../../shared/animations/animated_form_field.dart';
 import '../cubit/auth_cubit.dart';
@@ -30,13 +32,24 @@ class SignupScreen extends StatelessWidget {
   }
 }
 
-class SignupView extends StatelessWidget {
+class SignupView extends StatefulWidget {
   const SignupView({super.key});
 
   @override
+  State<SignupView> createState() => _SignupViewState();
+}
+
+class _SignupViewState extends State<SignupView> {
+  @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthCubit, AuthState>(
+    return BlocConsumer<AuthCubit, AuthState>(
+      listenWhen: (previous, current) {
+        print('📝 SignupView: listenWhen - previous: ${previous.status}, current: ${current.status}');
+        return current.status == AuthStatus.error;
+      },
       listener: (context, state) {
+        print('📝 SignupView: Listener triggered with state: ${state.status}');
+        
         if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -44,96 +57,95 @@ class SignupView extends StatelessWidget {
               backgroundColor: AppColors.error,
             ),
           );
-        } else if (state.status == AuthStatus.signupSuccess) {
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(AppStrings.accountCreatedSuccess),
-              backgroundColor: AppColors.success,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-          
-          // Wait a moment then complete signup flow and navigate to login screen
-          Future.delayed(const Duration(seconds: 2), () {
-            if (context.mounted) {
-              // Complete the signup flow (signs out user and re-enables auth listening)
-              context.read<AuthCubit>().completeSignupFlow();
-              
-              // Navigate to login screen
-              Navigator.of(context).pushAndRemoveUntil(
-                SlidePageRoute(
-                  child: const LoginScreen(),
-                  direction: AxisDirection.left,
-                ),
-                (route) => false,
-              );
-            }
-          });
         }
       },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Stack(
-                  children: [
-                    // Full screen background image
-                    Positioned.fill(
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: AppColors.headerBackground,
-                        ),
-                        child: Opacity(
-                          opacity: 0.7,
-                          child: Image.asset(
-                            'assets/images/bg.png',
-                            fit: BoxFit.cover,
+      buildWhen: (previous, current) {
+        // Only rebuild if we're in states that SignupScreen should handle
+        // Don't rebuild for unauthenticated state - that should be handled by AppView -> LoginScreen
+        if (current.status == AuthStatus.unauthenticated) {
+          print('📝 SignupView: buildWhen - skipping rebuild for unauthenticated state (should show LoginScreen)');
+          return false;
+        }
+        
+        // Always rebuild for other states including loading (for button loading state)
+        return true;
+      },
+      builder: (context, state) {
+        print('📝 SignupView: Builder called with state: ${state.status}');
+        
+        // Show success overlay when signup starts (loading) or is successful
+        if (state.status == AuthStatus.loading || state.status == AuthStatus.signupSuccess) {
+          return SignupSuccessOverlay(
+            onComplete: () {
+              print('🎉 SignupView: Success overlay completed, completing signup flow');
+              context.read<AuthCubit>().completeSignupFlow();
+            },
+          );
+        }
+        
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Stack(
+                    children: [
+                      // Full screen background image
+                      Positioned.fill(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: AppColors.headerBackground,
+                          ),
+                          child: Opacity(
+                            opacity: 0.7,
+                            child: Image.asset(
+                              'assets/images/bg.png',
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       ),
-                    ),
 
-                    // Content overlay
-                    Column(
-                      children: [
-                        // Header with rocket illustration and logo
-                        const HeaderSection(),
-                        // Signup form content with rounded corners
-                        Expanded(
-                          child: Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(30),
-                                topRight: Radius.circular(30),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.shadowLight,
-                                  blurRadius: 10,
-                                  offset: const Offset(0, -5),
+                      // Content overlay
+                      Column(
+                        children: [
+                          // Header with rocket illustration and logo
+                          const HeaderSection(),
+                          // Signup form content with rounded corners
+                          Expanded(
+                            child: Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: AppColors.background,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(30),
+                                  topRight: Radius.circular(30),
                                 ),
-                              ],
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.fromLTRB(22, 24, 22, 24),
-                              child: SignupFormSection(),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.shadowLight,
+                                    blurRadius: 10,
+                                    offset: const Offset(0, -5),
+                                  ),
+                                ],
+                              ),
+                              child: const Padding(
+                                padding: EdgeInsets.fromLTRB(22, 24, 22, 24),
+                                child: SignupFormSection(),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -346,10 +358,14 @@ class SignupButton extends StatelessWidget {
       builder: (context, formState) {
         return BlocBuilder<AuthCubit, AuthState>(
           builder: (context, authState) {
+            // Don't show loading on button - the overlay handles loading indication
+            final isProcessing = authState.status == AuthStatus.loading || 
+                                authState.status == AuthStatus.signupSuccess;
+            
             return CustomButton(
               text: 'Get Started',
-              isLoading: authState.status == AuthStatus.loading,
-              onPressed: formState.isValid
+              isLoading: false, // Never show loading on button
+              onPressed: formState.isValid && !isProcessing
                   ? () {
                       context.read<AuthCubit>().signUp(
                         formState.email.value,

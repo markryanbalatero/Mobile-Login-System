@@ -11,6 +11,13 @@ class AppTextStyles {
     color: AppColors.textDarkest,
   );
 
+  static TextStyle heading20Bold = GoogleFonts.inter(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    height: 1.3,
+    color: AppColors.textDarkest,
+  );
+
   // Subheader styles
   static TextStyle subheader16Regular = GoogleFonts.inter(
     fontSize: 16,

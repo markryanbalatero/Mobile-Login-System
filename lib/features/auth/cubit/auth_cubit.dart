@@ -74,6 +74,11 @@ class AuthCubit extends Cubit<AuthState> {
         email: email,
         password: password,
         fullName: fullName,
+      ).timeout(
+        const Duration(seconds: 20),
+        onTimeout: () {
+          throw Exception('Account creation timed out. Please try again.');
+        },
       );
       
       if (user != null) {
@@ -81,6 +86,7 @@ class AuthCubit extends Cubit<AuthState> {
         emit(state.copyWith(
           status: AuthStatus.signupSuccess,
           user: user.email ?? '',
+          errorMessage: null,
         ));
       } else {
         _ignoreAuthStateChanges = false;
@@ -101,16 +107,35 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signOut() async {
+    print('🚪 Starting logout process...');
     emit(state.copyWith(status: AuthStatus.loading));
     
     try {
+      print('📱 Calling GoogleSignInService.signOut()...');
       // First, sign out from Google (if signed in with Google)
       // This also handles Firebase Auth sign out
-      await GoogleSignInService.signOut();
+      await GoogleSignInService.signOut().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          print('⏰ Logout timeout after 10 seconds');
+          throw Exception('Logout timed out. Please try again.');
+        },
+      );
       
-      // The auth state listener will automatically emit unauthenticated state
-      // No need to manually emit here as the listener handles it
+      print('✅ GoogleSignInService.signOut() completed successfully');
+      
+      // Immediately emit unauthenticated state after successful logout
+      // Don't wait for the auth state listener as it might not trigger UI updates
+      print('🔄 Emitting unauthenticated state...');
+      emit(state.copyWith(
+        status: AuthStatus.unauthenticated,
+        user: null,
+        errorMessage: null,
+      ));
+      print('✅ Unauthenticated state emitted successfully');
+      
     } catch (e) {
+      print('💥 Logout error: $e');
       emit(
         state.copyWith(
           status: AuthStatus.error,

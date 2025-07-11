@@ -54,8 +54,12 @@ class GoogleSignInService {
       
       final user = userCredential.user;
       if (user != null) {
-        // Create or update user document in Firestore
-        await _createOrUpdateUserDocument(user);
+        // Create or update user document in Firestore (non-blocking, ignore errors)
+        _createOrUpdateUserDocument(user).then((_) {
+          debugPrint('✅ Google user document created/updated successfully for: ${user.email}');
+        }).catchError((e) {
+          debugPrint('❌ Failed to create/update Google user document (non-fatal): $e');
+        });
       }
       
       return user;
@@ -89,17 +93,19 @@ class GoogleSignInService {
     return _auth.currentUser;
   }
 
-  static bool isSignedIn() {
+    static bool isSignedIn() {
     return _auth.currentUser != null;
   }
 
   // Create or update user document in Firestore
   static Future<void> _createOrUpdateUserDocument(User user) async {
     try {
+      debugPrint('🔄 Creating/updating Google user document for: ${user.email}');
       final userDoc = _firestore.collection('users').doc(user.uid);
       final docSnapshot = await userDoc.get();
       
       if (!docSnapshot.exists) {
+        debugPrint('🆕 Creating new Google user document');
         // Create new user document
         await userDoc.set({
           'uid': user.uid,
@@ -111,14 +117,16 @@ class GoogleSignInService {
           'lastSignIn': FieldValue.serverTimestamp(),
         });
       } else {
+        debugPrint('🔄 Updating existing Google user document');
         // Update last sign in time for existing user
         await userDoc.update({
           'lastSignIn': FieldValue.serverTimestamp(),
         });
       }
+      debugPrint('✅ Google Firestore document operation completed for: ${user.email}');
     } catch (e) {
-      debugPrint('Failed to create/update user document: $e');
-      // Don't throw here to prevent auth from failing
+      debugPrint('❌ Failed to create/update Google user document: $e');
+      rethrow; // Let the caller handle the error
     }
   }
 }
